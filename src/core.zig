@@ -30,25 +30,25 @@ pub const ParamType = struct {
 
     pub fn Describe(comptime RawType: type) ParamType {
         const OptType = switch (@typeInfo(RawType)) {
-            .ErrorUnion => |eu| eu.payload,
+            .error_union => |eu| eu.payload,
             else => RawType,
         };
         const err_union = switch (@typeInfo(RawType)) {
-            .ErrorUnion => |eu| ErrorUnion{ .set = eu.error_set },
+            .error_union => |eu| ErrorUnion{ .set = eu.error_set },
             else => ErrorUnion.none,
         };
         const optional = switch (@typeInfo(OptType)) {
-            .Optional => true,
+            .optional => true,
             else => false,
         };
         const PtrType = switch (@typeInfo(OptType)) {
-            .Optional => |o| o.child,
+            .optional => |o| o.child,
             else => OptType,
         };
         const pointer = switch (@typeInfo(PtrType)) {
-            .Pointer => |p| switch (p.size) {
-                .One => PointerChild{ .one = p.child },
-                .Slice => PointerChild{ .slice = p.child },
+            .pointer => |p| switch (p.size) {
+                .one => PointerChild{ .one = p.child },
+                .slice => PointerChild{ .slice = p.child },
                 // Will come back and support the others when I understand what they need better
                 else => PointerChild.none,
             },
@@ -69,7 +69,7 @@ pub const ParamType = struct {
     }
     pub fn DescribeParam(comptime idx: comptime_int, comptime FnType: type) ParamType {
         const fn_info = switch (@typeInfo(FnType)) {
-            .Fn => |f| f,
+            .@"fn" => |f| f,
             else => @compileError("Provided Predicate type is not a function."),
         };
         return Describe(fn_info.params[idx].type.?);
@@ -110,7 +110,7 @@ pub const ReturnType = struct {
     }
     pub fn Capture(comptime FnType: type) type {
         const fn_info = switch (@typeInfo(FnType)) {
-            .Fn => |f| f,
+            .@"fn" => |f| f,
             else => @compileError("Provided Predicate type is not a function."),
         };
         return fn_info.return_type.?;
