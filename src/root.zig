@@ -413,10 +413,10 @@ test "producer once" {
 
 test "producer OverIterator" {
     const zig_iter = std.mem.splitScalar(u8, "foo bar baz", ' ');
-    var total = std.ArrayList(u8).init(std.testing.allocator);
-    defer total.deinit();
-    _ = iterst.overIterator(zig_iter).collectWriter(total.writer()).use();
-    try std.testing.expectEqualStrings("foobarbaz", total.items);
+    var aw: std.Io.Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+    _ = iterst.overIterator(zig_iter).collectWriter(&aw.writer).use();
+    try std.testing.expectEqualStrings("foobarbaz", aw.writer.buffer[0..aw.writer.end]);
 }
 
 test "producer Range" {
